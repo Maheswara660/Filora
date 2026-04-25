@@ -1,0 +1,34 @@
+# IDE & Tooling
+*.iml
+.gradle/
+.idea/
+.kotlin/
+.vscode/
+
+# Build & Captures
+/build/
+/*/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Signing & Secrets
+*.jks
+*.keystore
+*.p12
+google-services.json
+local.properties
+
+# Logs
+/logs/
+*.log
+
+# Android Artifacts
+*.apk
+*.apks
+*.aab
+output-metadata.json

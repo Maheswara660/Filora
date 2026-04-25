@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/Theme.FileExplorer"
+        tools:targetApi="34" >
+
+        <activity
+            android:name=".screen.textEditor.TextEditorActivity"
+            android:exported="false"
+            android:label="@string/title_activity_text_editor"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity android:name=".screen.preferences.PreferencesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_preferences"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".screen.viewer.pdf.PdfViewerActivity"
+            android:exported="true"
+            android:label="@string/title_activity_pdf_viewer"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize"
+            android:documentLaunchMode="intoExisting"
+            android:autoRemoveFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="application/pdf"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".screen.viewer.text.TextViewerActivity"
+            android:exported="true"
+            android:label="@string/text_viewer"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize"
+            android:documentLaunchMode="intoExisting"
+            android:autoRemoveFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="text/*" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".screen.viewer.image.ImageViewerActivity"
+            android:exported="true"
+            android:label="@string/title_activity_image_viewer"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize"
+            android:documentLaunchMode="intoExisting"
+            android:autoRemoveFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="image/*"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".screen.viewer.audio.AudioPlayerActivity"
+            android:exported="true"
+            android:label="@string/title_activity_audio_player"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize"
+            android:documentLaunchMode="intoExisting"
+            android:autoRemoveFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="audio/*"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".screen.viewer.video.VideoPlayerActivity"
+            android:exported="true"
+            android:label="@string/title_activity_video_player"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize"
+            android:documentLaunchMode="intoExisting"
+            android:autoRemoveFromRecents="true"
+            android:supportsPictureInPicture="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="video/*" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".screen.logs.LogsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_logs"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".screen.about.AboutActivity"
+            android:exported="false"
+            android:label="@string/about"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".screen.main.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FileExplorer"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".screen.viewer.audio.service.AudioPlayerService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".screen.main.tab.files.service.ContentOperationService"
+            android:foregroundServiceType="dataSync" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.maheswara660.filora.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <receiver
+            android:name=".screen.main.tab.files.misc.InstallerReceiver"
+            android:exported="false" />
+
+
+    </application>
+
+</manifest>

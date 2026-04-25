@@ -1,0 +1,98 @@
+package com.maheswara660.filora.screen.main.tab.files.zip
+
+import com.maheswara660.filora.App.Companion.globalClass
+import com.maheswara660.filora.common.isNot
+import com.maheswara660.filora.common.removeIf
+import com.maheswara660.filora.screen.main.tab.files.FilesTab
+import com.maheswara660.filora.screen.main.tab.files.holder.LocalFileHolder
+import com.maheswara660.filora.screen.main.tab.files.holder.VirtualFileHolder
+import kotlinx.coroutines.runBlocking
+
+class ZipManager {
+    private val archiveList = hashMapOf<LocalFileHolder, ZipTree>()
+
+
+    /**
+     * Validates the archive trees by checking if their source files are still valid.
+     * Removes any invalid archive trees from the `archiveList`.
+     *
+     * @return A set of unique paths of the invalid archive trees.
+     */
+    suspend fun validateArchiveTrees(): Set<String> {
+        val invalidTrees =
+            archiveList.values.filter { !it.source.isValid() }.map { it.source.uniquePath }
+
+        archiveList.removeIf { localFileHolder, zipTree ->
+            runBlocking { !localFileHolder.isValid() }
+        }
+
+        return invalidTrees.toSet()
+    }
+
+    suspend fun checkForSourceChanges(): Boolean {
+        var foundChanges = false
+        archiveList.values.forEach { zipTree ->
+            if (zipTree.source.lastModified isNot zipTree.timeStamp || zipTree.checkExtractedFiles()
+                    .isNotEmpty()
+            ) {
+                foundChanges = true
+            }
+        }
+        return foundChanges
+    }
+
+    fun openArchive(archive: LocalFileHolder) {
+        val existingTreeKey = archiveList.keys.find { archive.uniquePath == it.uniquePath }
+
+        if (existingTreeKey != null) {
+            archiveList[existingTreeKey]?.let { existingTree ->
+                if (existingTree.timeStamp == archive.lastModified) {
+                    globalClass.mainActivityManager.let { mainManager ->
+                        val tab = mainManager.getActiveTab()
+                        if (tab is FilesTab) {
+                            if (tab.activeFolder is VirtualFileHolder) {
+                                mainManager.replaceCurrentTabWith(
+                                    tab = FilesTab(
+                                        existingTree.createRootContentHolder()
+                                    ),
+                                    keepCurrentTabAsParent = true
+                                )
+                            } else {
+                                tab.openFolder(existingTree.createRootContentHolder())
+                            }
+                        } else {
+                            mainManager.replaceCurrentTabWith(
+                                FilesTab(existingTree.createRootContentHolder())
+                            )
+                        }
+                        return
+                    }
+                } else {
+                    archiveList.remove(existingTreeKey)
+                }
+            }
+        }
+
+        archiveList[archive] = ZipTree(archive).apply {
+            globalClass.mainActivityManager.let { mainManager ->
+                val tab = mainManager.getActiveTab()
+                if (tab is FilesTab) {
+                    if (tab.activeFolder is VirtualFileHolder) {
+                        mainManager.replaceCurrentTabWith(
+                            tab = FilesTab(
+                                createRootContentHolder()
+                            ),
+                            keepCurrentTabAsParent = true
+                        )
+                    } else {
+                        tab.openFolder(createRootContentHolder())
+                    }
+                } else {
+                    mainManager.replaceCurrentTabWith(
+                        FilesTab(createRootContentHolder())
+                    )
+                }
+            }
+        }
+    }
+}

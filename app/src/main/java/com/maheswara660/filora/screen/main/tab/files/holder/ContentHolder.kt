@@ -1,0 +1,159 @@
+package com.maheswara660.filora.screen.main.tab.files.holder
+
+import android.content.Context
+import android.os.Bundle
+import com.maheswara660.filora.App.Companion.globalClass
+import com.maheswara660.filora.R
+import com.maheswara660.filora.common.emptyString
+import com.maheswara660.filora.common.toFormattedDate
+import com.maheswara660.filora.screen.main.tab.files.misc.ContentCount
+import com.maheswara660.filora.screen.main.tab.files.misc.FileMimeType
+import com.maheswara660.filora.screen.main.tab.files.misc.FileMimeType.apkFileType
+import com.maheswara660.filora.screen.main.tab.files.misc.SortingMethod.SORT_BY_DATE
+import com.maheswara660.filora.screen.main.tab.files.misc.SortingMethod.SORT_BY_NAME
+import com.maheswara660.filora.screen.main.tab.files.misc.SortingMethod.SORT_BY_SIZE
+import com.maheswara660.filora.screen.main.tab.files.misc.SortingMethod.SORT_BY_TYPE
+import com.maheswara660.filora.screen.main.tab.files.misc.sortFoldersFirst
+import com.maheswara660.filora.screen.main.tab.files.misc.sortLargerFirst
+import com.maheswara660.filora.screen.main.tab.files.misc.sortName
+import com.maheswara660.filora.screen.main.tab.files.misc.sortNameRev
+import com.maheswara660.filora.screen.main.tab.files.misc.sortNewerFirst
+import com.maheswara660.filora.screen.main.tab.files.misc.sortOlderFirst
+import com.maheswara660.filora.screen.main.tab.files.misc.sortSmallerFirst
+import com.maheswara660.filora.screen.main.tab.files.misc.sortType
+import com.maheswara660.filora.screen.main.tab.files.misc.sortTypeRev
+
+/**
+ * Abstract class representing a content holder.
+ * This class provides common properties and methods for managing content.
+ */
+abstract class ContentHolder {
+    val uid = globalClass.generateUid()
+    abstract val uniquePath: String
+
+    abstract val displayName: String
+
+    abstract val isFolder: Boolean
+    abstract val lastModified: Long
+    abstract val size: Long
+    abstract val extension: String
+    abstract val canRead: Boolean
+    abstract val canWrite: Boolean
+
+    abstract val canAddNewContent: Boolean
+
+    /**
+     * Returns unsorted content list, use listSortedContent() to get sorted list.
+     */
+    abstract suspend fun listContent(): ArrayList<out ContentHolder>
+
+    abstract suspend fun getParent(): ContentHolder?
+
+    open suspend fun createSubFile(name: String, onCreated: (ContentHolder?) -> Unit) {
+        onCreated(null)
+    }
+
+    open suspend fun createSubFolder(name: String, onCreated: (ContentHolder?) -> Unit) {
+        onCreated(null)
+    }
+
+    abstract suspend fun getContentCount(): ContentCount
+    abstract suspend fun findFile(name: String): ContentHolder?
+
+    open suspend fun getDetails(): String {
+        return emptyString
+    }
+
+    /**
+     * Checks if the content holder is a valid content.
+     * For example, it might check if the underlying file or folder still exists on the file system.
+     *
+     * @return `true` if the content holder is valid, `false` otherwise.
+     */
+    abstract suspend fun isValid(): Boolean
+
+    open fun open(
+        context: Context,
+        anonymous: Boolean,
+        skipSupportedExtensions: Boolean,
+        customMimeType: String?,
+        options: Bundle? = null
+    ) {
+    }
+
+    open fun isFile(): Boolean {
+        return !isFolder
+    }
+
+    open suspend fun hasParent(onlyReadable: Boolean = true): Boolean {
+        val parent = getParent()
+        return parent != null && parent.isValid() && (!onlyReadable || parent.canRead)
+    }
+
+    open suspend fun listSortedContent(): ArrayList<out ContentHolder> {
+        val sortingPrefs = globalClass.preferencesManager.getSortingPrefsFor(this)
+
+        return listContent().apply {
+            when (sortingPrefs.sortMethod) {
+                SORT_BY_NAME -> {
+                    sortWith(if (sortingPrefs.reverseSorting) sortNameRev else sortName)
+                }
+
+                SORT_BY_DATE -> {
+                    sortWith(if (sortingPrefs.reverseSorting) sortOlderFirst else sortNewerFirst)
+                }
+
+                SORT_BY_SIZE -> {
+                    sortWith(if (sortingPrefs.reverseSorting) sortLargerFirst else sortSmallerFirst)
+                }
+
+                SORT_BY_TYPE -> {
+                    sortWith(if (sortingPrefs.reverseSorting) sortTypeRev else sortType)
+                }
+            }
+
+            if (sortingPrefs.showFoldersFirst) sortWith(sortFoldersFirst)
+
+            if (!globalClass.preferencesManager.showHiddenFiles) {
+                removeIf { it.isHidden() }
+            }
+        }
+    }
+
+    fun isApk(): Boolean = extension == apkFileType
+
+    fun isApkBundle(): Boolean = FileMimeType.apkBundleFileType.contains(extension)
+
+
+    fun isHidden(): Boolean = displayName.startsWith(".")
+
+    suspend fun getFormattedFileCount(filesCount: Int, foldersCount: Int): String {
+        return buildString {
+            if (foldersCount == 0 && filesCount == 0) {
+                append(globalClass.getString(R.string.empty_folder))
+            } else {
+                if (foldersCount > 0) {
+                    append(
+                        globalClass.getString(
+                            R.string.folders_count,
+                            foldersCount
+                        )
+                    )
+                    if (filesCount > 0) append(", ")
+                }
+                if (filesCount > 0) {
+                    append(
+                        globalClass.getString(
+                            R.string.files_count,
+                            filesCount
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun getLastModifiedDate(): String {
+        return lastModified.toFormattedDate(hideSeconds = true)
+    }
+}
